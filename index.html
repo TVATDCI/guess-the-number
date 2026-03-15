@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Number Hunt 🚀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+    
+    <div class="game-container">
+        <header>
+            <h1>Space Number Hunt 🚀</h1>
+            <p class="subtitle">Help the astronaut find the secret number!</p>
+        </header>
+
+        <div id="setup-screen" class="screen">
+            <div class="difficulty-selector">
+                <h2>Choose Your Mission:</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn easy" data-difficulty="easy">
+                        <span class="emoji">🌙</span>
+                        <span class="name">Easy</span>
+                        <span class="range">1-10</span>
+                    </button>
+                    <button class="diff-btn medium" data-difficulty="medium">
+                        <span class="emoji">🪐</span>
+                        <span class="name">Medium</span>
+                        <span class="range">1-50</span>
+                    </button>
+                    <button class="diff-btn hard" data-difficulty="hard">
+                        <span class="emoji">🌟</span>
+                        <span class="name">Hard</span>
+                        <span class="range">1-100</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-info">
+                <div class="mission-info">
+                    <span id="difficulty-label">Mission: Easy</span>
+                </div>
+                <div class="guesses-info">
+                    <span id="guesses-left">⭐ 10</span> guesses left
+                </div>
+            </div>
+
+            <div class="astronaut-area">
+                <div id="astronaut" class="astronaut">🧑‍🚀</div>
+            </div>
+
+            <div id="message" class="message">
+                I'm thinking of a number... Can you find it? 🔢
+            </div>
+
+            <div class="input-area">
+                <input 
+                    type="number" 
+                    id="guess-input" 
+                    placeholder="Enter your guess!"
+                    min="1"
+                >
+                <button id="submit-btn" class="submit-btn">
+                    Blast Off! 🚀
+                </button>
+            </div>
+
+            <div id="history" class="history">
+                <span class="history-label">Your guesses:</span>
+                <div id="guess-list" class="guess-list"></div>
+            </div>
+        </div>
+
+        <div id="win-screen" class="screen hidden">
+            <div class="win-content">
+                <div class="win-emoji">🎉🌟🚀🎊</div>
+                <h2>YOU DID IT! 🌟</h2>
+                <p id="win-message">You found the secret number!</p>
+                <div class="win-stats">
+                    <p>Guesses used: <span id="final-guesses">0</span></p>
+                </div>
+                <button id="play-again-win" class="play-again-btn">
+                    Play Again! 🔄
+                </button>
+            </div>
+        </div>
+
+        <div id="lose-screen" class="screen hidden">
+            <div class="lose-content">
+                <div class="lose-emoji">😢🌙</div>
+                <h2>Mission Failed 😢</h2>
+                <p>The secret number was: <span id="secret-number">?</span></p>
+                <p>Don't give up, astronaut! Try again! 💪</p>
+                <button id="play-again-lose" class="play-again-btn">
+                    Try Again! 🔄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
