@@ -1,33 +1,74 @@
-# Guess the number
+# Guess the Number 🚀
 
-Create a program that challenges the player to guess a number between 1 and 100.
+A fun number guessing game - now with a space-themed web version for playing with your 7-year-old son!
 
-## Instructions
+## How to Play
 
-- The program generates a new random number every time it runs and prompts the player to guess it
-- if the player guesses the number, the program prints a congratulation message and stops the execution
-- if the guess is wrong, the program tells the player if the guess is higher or smaller than the random number and asks the player to keep trying
+### Console Version (Node.js)
+```bash
+node main.js
+```
 
-## Commands to use
+### Web Version (Browser)
+Open `index.html` in any web browser, or run:
+```bash
+npx serve
+```
 
-- `console.clear()`: deletes everything present in the console
-- `readline.question()`: using the `readline-sync` package, it lets you get and save an input from the console
-- `console.log()`: as always, use it to output any kind of message to the console
+## Game Features
 
-## Bonus
+### Difficulty Levels
 
-Add a feature to limit the number of available guesses and print them on the screen
+| Level | Range | Guesses |
+|-------|-------|---------|
+| 🌙 Easy | 1-10 | Unlimited |
+| 🪐 Medium | 1-50 | 10 |
+| 🌟 Hard | 1-100 | 7 |
 
-## Screenshots
+### How to Play
+1. Choose a difficulty level
+2. Guess the secret number
+3. Get hints if too high (📉) or too low (📈)
+4. Win and celebrate with confetti! 🎉
 
-### Start
-![](assets/start.png)
+---
 
-### Wrong guess
-![](assets/lower-guess.png)
+## Development Ideas for Future
 
-![](assets/higher-guess.png)
+Want to improve the game with your son? Here are some ideas to work on together:
 
-### Win
+### Easy Improvements (Beginner)
+- [ ] Add animal sounds when winning
+- [ ] Change the theme (ocean, dinosaurs, superheroes)
+- [ ] Add a counter showing attempts used
+- [ ] Make the astronaut dance on win
 
-![](assets/correct-guess.png)
+### Medium Improvements (Intermediate)
+- [ ] Add a timer for speed challenges
+- [ ] Create a high score board (localStorage)
+- [ ] Add multiple secret numbers to guess
+- [ ] Add difficulty icons to guess history
+
+### Hard Improvements (Advanced)
+- [ ] Two-player mode (take turns guessing)
+- [ ] Multiplication challenges (guess the product)
+- [ ] Add animated backgrounds per difficulty
+- [ ] Mobile app version
+
+---
+
+## Project Structure
+
+```
+guess-the-number/
+├── main.js          # Console version (Node.js)
+├── index.html       # Web version
+├── style.css        # Space theme styling
+├── game.js          # Browser game logic
+├── README.md        # This file
+└── assets/          # Screenshots
+```
+
+## Credits
+
+Built with ❤️ for learning and fun with my son!
