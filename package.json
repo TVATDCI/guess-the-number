@@ -1,5 +1,5 @@
 {
-  "name": "pb-ex-29",
+  "name": "guess-the-number",
   "type": "module",
   "version": "1.0.0",
   "description": "Create a program that challenges the player to guess a number between 1 and 100.",
