@@ -107,6 +107,7 @@ const elements = {
     dinoThemeBtn: document.getElementById('dino-theme-btn'),
     oceanThemeBtn: document.getElementById('ocean-theme-btn'),
     unlockHint: document.getElementById('unlock-hint'),
+    resetProgress: document.getElementById('reset-progress'),
     timerDisplay: document.getElementById('timer-display'),
     timerValue: document.getElementById('timer-value'),
     highScoreDisplay: document.getElementById('high-score-display'),
@@ -165,6 +166,28 @@ function init() {
             applyTheme();
         });
     });
+
+    if (elements.resetProgress) {
+        elements.resetProgress.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all progress? This will clear your streak, high score, and relock themes!')) {
+                localStorage.removeItem('guessTheNumberStreak');
+                localStorage.removeItem('guessTheNumberLastWin');
+                localStorage.removeItem('guessTheNumberHighScore');
+                localStorage.removeItem('guessTheNumberTotalWins');
+                
+                totalWins = 0;
+                gameState.streak = 0;
+                currentTheme = 'space';
+                
+                elements.streakDisplay.classList.add('hidden');
+                elements.highScoreDisplay.classList.add('hidden');
+                updateThemeButtons();
+                applyTheme();
+                
+                alert('Progress reset! Start fresh!');
+            }
+        });
+    }
 
     loadHighScore();
     loadStreak();
