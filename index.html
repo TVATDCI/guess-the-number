@@ -28,12 +28,15 @@
                     </label>
                 </div>
                 <p class="timer-hint">60 seconds to guess!</p>
-                <div class="setting-row">
-                    <span>🦕 Dinosaur Theme</span>
-                    <label class="toggle">
-                        <input type="checkbox" id="theme-toggle">
-                        <span class="toggle-slider"></span>
-                    </label>
+                <hr class="settings-divider">
+                <div class="theme-selector">
+                    <p class="theme-label">🎨 Choose Theme:</p>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="space" title="Space">🚀</button>
+                        <button class="theme-btn" id="dino-theme-btn" data-theme="dinosaur" title="Dinosaur">🦕</button>
+                        <button class="theme-btn locked" id="ocean-theme-btn" data-theme="ocean" title="Unlock with 10 wins">🔒</button>
+                    </div>
+                    <p class="unlock-hint" id="unlock-hint">Win 10 games to unlock Ocean! 🌊</p>
                 </div>
                 <button id="close-settings" class="close-settings">Done ✓</button>
             </div>
@@ -84,9 +87,29 @@
                     </button>
                 </div>
             </div>
+            <div class="mode-selector">
+                <h2>Or Play with a Friend!</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn two-player" data-difficulty="two-player">
+                        <span class="emoji">👥</span>
+                        <span class="name">Two Player</span>
+                        <span class="range">Take turns!</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="game-screen" class="screen hidden">
+            <div class="two-player-info hidden" id="two-player-info">
+                <div class="player-turn" id="player-1-turn">
+                    <span class="player-label">Player 1</span>
+                    <span class="player-score">Score: <span id="p1-score">0</span></span>
+                </div>
+                <div class="player-turn" id="player-2-turn">
+                    <span class="player-label">Player 2</span>
+                    <span class="player-score">Score: <span id="p2-score">0</span></span>
+                </div>
+            </div>
             <div class="game-info">
                 <div class="mission-info">
                     <span id="difficulty-label">Mission: Easy</span>

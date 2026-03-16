@@ -3,7 +3,8 @@ const DIFFICULTIES = {
     medium: { min: 1, max: 50, guesses: 10, label: 'Medium', emoji: '🪐', type: 'number' },
     hard: { min: 1, max: 100, guesses: 7, label: 'Hard', emoji: '🌟', type: 'number' },
     'mult-easy': { min: 1, max: 36, guesses: Infinity, label: 'Multiply Easy', emoji: '➕', type: 'multiply', factor1: 6, factor2: 6 },
-    'mult-hard': { min: 1, max: 100, guesses: 10, label: 'Multiply Hard', emoji: '✖️', type: 'multiply', factor1: 10, factor2: 10 }
+    'mult-hard': { min: 1, max: 100, guesses: 10, label: 'Multiply Hard', emoji: '✖️', type: 'multiply', factor1: 10, factor2: 10 },
+    'two-player': { min: 1, max: 50, guesses: 10, label: 'Two Player', emoji: '👥', type: 'twoplayer' }
 };
 
 const THEMES = {
@@ -29,10 +30,29 @@ const THEMES = {
         encouragement: "Don't give up, dino! Try again! 💪",
         correctMsg: "🎉 ROAR! You found it, brave dino!",
         submitBtn: "ROAR! 🦖"
+    },
+    ocean: {
+        name: 'Ocean',
+        background: 'ocean',
+        character: '🐙',
+        winEmojis: '🎉🐠🌊🦀',
+        loseEmojis: '😢🐚',
+        loseTitle: 'Swept Away! 😢',
+        encouragement: "Don't give up, explorer! Try again! 💪",
+        correctMsg: "🎉 SPLASH! You found it, ocean hero!",
+        submitBtn: "Dive In! 🌊"
     }
 };
 
 let currentTheme = 'space';
+let totalWins = parseInt(localStorage.getItem('guessTheNumberTotalWins')) || 0;
+let twoPlayerState = {
+    currentPlayer: 1,
+    p1Score: 0,
+    p2Score: 0,
+    roundsPlayed: 0,
+    currentWinner: null
+};
 let gameState = {
     secretNumber: 0,
     secretFactor1: 0,
@@ -46,7 +66,8 @@ let gameState = {
     timerInterval: null,
     hasPlayedBefore: false,
     streak: 0,
-    lastWinTime: null
+    lastWinTime: null,
+    isTwoPlayer: false
 };
 
 const MESSAGES = {
@@ -82,6 +103,10 @@ const elements = {
     closeSettings: document.getElementById('close-settings'),
     timerToggle: document.getElementById('timer-toggle'),
     themeToggle: document.getElementById('theme-toggle'),
+    themeButtons: document.querySelectorAll('.theme-btn'),
+    dinoThemeBtn: document.getElementById('dino-theme-btn'),
+    oceanThemeBtn: document.getElementById('ocean-theme-btn'),
+    unlockHint: document.getElementById('unlock-hint'),
     timerDisplay: document.getElementById('timer-display'),
     timerValue: document.getElementById('timer-value'),
     highScoreDisplay: document.getElementById('high-score-display'),
@@ -96,7 +121,12 @@ const elements = {
     winEmoji: document.getElementById('win-emoji'),
     loseEmoji: document.getElementById('lose-emoji'),
     thermometer: document.getElementById('thermometer'),
-    thermometerFill: document.getElementById('thermometer-fill')
+    thermometerFill: document.getElementById('thermometer-fill'),
+    twoPlayerInfo: document.getElementById('two-player-info'),
+    player1Turn: document.getElementById('player-1-turn'),
+    player2Turn: document.getElementById('player-2-turn'),
+    p1Score: document.getElementById('p1-score'),
+    p2Score: document.getElementById('p2-score')
 };
 
 function init() {
@@ -114,6 +144,7 @@ function init() {
 
     elements.settingsBtn.addEventListener('click', () => {
         elements.settingsPanel.classList.remove('hidden');
+        updateThemeButtons();
     });
 
     elements.closeSettings.addEventListener('click', () => {
@@ -124,9 +155,15 @@ function init() {
         gameState.timerEnabled = e.target.checked;
     });
 
-    elements.themeToggle.addEventListener('change', (e) => {
-        currentTheme = e.target.checked ? 'dinosaur' : 'space';
-        applyTheme();
+    elements.themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+            if (btn.classList.contains('locked')) return;
+            
+            currentTheme = theme;
+            updateThemeButtons();
+            applyTheme();
+        });
     });
 
     loadHighScore();
@@ -134,9 +171,28 @@ function init() {
     applyTheme();
 }
 
+function updateThemeButtons() {
+    elements.themeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.theme === currentTheme) {
+            btn.classList.add('active');
+        }
+    });
+
+    if (totalWins >= 10) {
+        elements.oceanThemeBtn.classList.remove('locked');
+        elements.oceanThemeBtn.textContent = '🐙';
+        elements.oceanThemeBtn.title = 'Ocean Theme';
+        elements.unlockHint.textContent = 'Ocean theme unlocked! 🌊';
+    } else {
+        elements.unlockHint.textContent = `Win ${10 - totalWins} more games to unlock Ocean! 🌊`;
+    }
+}
+
 function startGame(difficulty) {
     const config = DIFFICULTIES[difficulty];
     const isMultiply = config.type === 'multiply';
+    const isTwoPlayer = config.type === 'twoplayer';
     
     let secretNum;
     if (isMultiply) {
@@ -159,16 +215,19 @@ function startGame(difficulty) {
         timerValue: 60,
         timerInterval: null,
         hasPlayedBefore: gameState.hasPlayedBefore,
-        streak: gameState.streak
+        streak: gameState.streak,
+        isTwoPlayer: isTwoPlayer
     };
 
     if (isMultiply) {
         elements.difficultyLabel.textContent = `Math: ${config.emoji} ${gameState.secretFactor1} × ${gameState.secretFactor2} = ?`;
+    } else if (isTwoPlayer) {
+        elements.difficultyLabel.textContent = `👥 Two Player - ${config.label} (${config.min}-${config.max})`;
     } else {
         elements.difficultyLabel.textContent = `Mission: ${config.emoji} ${config.label} (${config.min}-${config.max})`;
     }
     elements.guessesLeftEl.textContent = config.guesses === Infinity ? '⭐ ∞' : `⭐ ${gameState.guessesLeft}`;
-    elements.message.textContent = isMultiply ? MESSAGES.startMult : MESSAGES.start;
+    elements.message.textContent = isMultiply ? MESSAGES.startMult : (isTwoPlayer ? `Player ${twoPlayerState.currentPlayer}'s turn!` : MESSAGES.start);
     elements.message.className = 'message';
     elements.guessInput.value = '';
     elements.guessInput.min = config.min;
@@ -186,12 +245,28 @@ function startGame(difficulty) {
     elements.character.textContent = THEMES[currentTheme].character;
     elements.submitBtn.textContent = THEMES[currentTheme].submitBtn;
 
-    if (!isMultiply) {
+    if (!isMultiply && !isTwoPlayer) {
         elements.thermometer.classList.remove('hidden');
     } else {
         elements.thermometer.classList.add('hidden');
     }
 
+    if (isTwoPlayer) {
+        elements.twoPlayerInfo.classList.remove('hidden');
+        elements.player1Turn.classList.remove('active');
+        elements.player2Turn.classList.remove('active');
+        if (twoPlayerState.currentPlayer === 1) {
+            elements.player1Turn.classList.add('active');
+        } else {
+            elements.player2Turn.classList.add('active');
+        }
+        elements.p1Score.textContent = twoPlayerState.p1Score;
+        elements.p2Score.textContent = twoPlayerState.p2Score;
+    } else {
+        elements.twoPlayerInfo.classList.add('hidden');
+    }
+
+    applyDifficultyBackground();
     showScreen('game');
     elements.guessInput.focus();
 }
@@ -228,6 +303,7 @@ function handleGuess() {
     const guess = parseInt(elements.guessInput.value);
     const config = DIFFICULTIES[gameState.difficulty];
     const isMultiply = config.type === 'multiply';
+    const isTwoPlayer = config.type === 'twoplayer';
 
     elements.character.classList.remove('shake', 'bounce');
 
@@ -252,15 +328,23 @@ function handleGuess() {
 
     addGuessToHistory(guess);
 
-    if (!isMultiply) {
+    if (!isMultiply && !isTwoPlayer) {
         updateThermometer(guess);
     }
 
     if (guess === gameState.secretNumber) {
         stopTimer();
-        winGame();
+        if (isTwoPlayer) {
+            handleTwoPlayerWin();
+        } else {
+            winGame();
+        }
     } else if (gameState.guessesLeft === 0 || (gameState.guessesLeft === '∞' && false)) {
-        loseGame();
+        if (isTwoPlayer) {
+            handleTwoPlayerLose();
+        } else {
+            loseGame();
+        }
     } else if (guess > gameState.secretNumber) {
         showMessage(MESSAGES.tooHigh, 'hint-high');
         shakeCharacter();
@@ -271,6 +355,83 @@ function handleGuess() {
 
     elements.guessInput.value = '';
     elements.guessInput.focus();
+}
+
+function handleTwoPlayerWin() {
+    if (twoPlayerState.currentPlayer === 1) {
+        twoPlayerState.p1Score++;
+    } else {
+        twoPlayerState.p2Score++;
+    }
+    twoPlayerState.currentWinner = twoPlayerState.currentPlayer;
+    twoPlayerState.roundsPlayed++;
+    
+    const winnerMsg = `🎉 Player ${twoPlayerState.currentPlayer} wins this round!`;
+    showMessage(winnerMsg, 'correct');
+    danceCharacter();
+    playWinSound();
+    
+    setTimeout(() => {
+        switchTwoPlayerTurn();
+    }, 1500);
+}
+
+function handleTwoPlayerLose() {
+    twoPlayerState.currentWinner = twoPlayerState.currentPlayer === 1 ? 2 : 1;
+    twoPlayerState.roundsPlayed++;
+    
+    const winnerMsg = `😢 Out of guesses! Player ${twoPlayerState.currentWinner} wins!`;
+    showMessage(winnerMsg, 'hint-high');
+    
+    setTimeout(() => {
+        switchTwoPlayerTurn();
+    }, 1500);
+}
+
+function switchTwoPlayerTurn() {
+    if (twoPlayerState.roundsPlayed >= 3) {
+        endTwoPlayerGame();
+        return;
+    }
+    
+    twoPlayerState.currentPlayer = twoPlayerState.currentPlayer === 1 ? 2 : 1;
+    startGame('two-player');
+}
+
+function endTwoPlayerGame() {
+    gameState.isGameOver = true;
+    
+    let winner, loser;
+    if (twoPlayerState.p1Score > twoPlayerState.p2Score) {
+        winner = 1;
+        loser = 2;
+    } else if (twoPlayerState.p2Score > twoPlayerState.p1Score) {
+        winner = 2;
+        loser = 1;
+    } else {
+        winner = 0;
+    }
+    
+    if (winner === 0) {
+        elements.winTitle.textContent = "It's a Tie! 🤝";
+        elements.winEmoji.textContent = '🤝🎉';
+    } else {
+        elements.winTitle.textContent = `Player ${winner} Wins! 🎉`;
+        elements.winEmoji.textContent = '👑🎉🏆';
+    }
+    
+    elements.finalGuesses.textContent = `${twoPlayerState.p1Score} - ${twoPlayerState.p2Score}`;
+    showScreen('win');
+    createConfetti();
+    playWinSound();
+    
+    twoPlayerState = {
+        currentPlayer: 1,
+        p1Score: 0,
+        p2Score: 0,
+        roundsPlayed: 0,
+        currentWinner: null
+    };
 }
 
 function updateThermometer(guess) {
@@ -332,6 +493,9 @@ function winGame() {
     gameState.isGameOver = true;
     const config = DIFFICULTIES[gameState.difficulty];
     const isMultiply = config.type === 'multiply';
+    
+    totalWins++;
+    localStorage.setItem('guessTheNumberTotalWins', totalWins);
     
     const msg = isMultiply ? MESSAGES.correctMult : THEMES[currentTheme].correctMsg;
     showMessage(msg, 'correct');
@@ -493,13 +657,18 @@ function resetStreak() {
 
 function applyTheme() {
     const theme = THEMES[currentTheme];
-    document.body.className = theme.background;
+    applyDifficultyBackground();
     
     if (currentTheme === 'dinosaur') {
         document.documentElement.style.setProperty('--bg-dark', '#1a3a1a');
         document.documentElement.style.setProperty('--bg-light', '#2d5a2d');
         document.querySelector('h1').textContent = 'Dino Number Hunt 🦕';
         document.querySelector('.subtitle').textContent = 'Help the dinosaur find the secret number!';
+    } else if (currentTheme === 'ocean') {
+        document.documentElement.style.setProperty('--bg-dark', '#0a1a2e');
+        document.documentElement.style.setProperty('--bg-light', '#1a3a5e');
+        document.querySelector('h1').textContent = 'Ocean Number Hunt 🌊';
+        document.querySelector('.subtitle').textContent = 'Help the octopus find the secret number! 🐙';
     } else {
         document.documentElement.style.setProperty('--bg-dark', '#0c1445');
         document.documentElement.style.setProperty('--bg-light', '#1a237e');
@@ -507,7 +676,33 @@ function applyTheme() {
         document.querySelector('.subtitle').textContent = 'Help the astronaut find the secret number!';
     }
     
-    elements.themeToggle.checked = currentTheme === 'dinosaur';
+    if (elements.character) {
+        elements.character.textContent = THEMES[currentTheme].character;
+    }
+    if (elements.submitBtn) {
+        elements.submitBtn.textContent = THEMES[currentTheme].submitBtn;
+    }
+    
+    if (elements.themeToggle) {
+        elements.themeToggle.checked = currentTheme === 'dinosaur';
+    }
+}
+
+function applyDifficultyBackground() {
+    document.body.classList.remove('easy-bg', 'medium-bg', 'hard-bg', 'math-bg');
+    
+    if (gameState.difficulty) {
+        const diff = gameState.difficulty;
+        if (diff === 'easy' || diff === 'two-player') {
+            document.body.classList.add('easy-bg');
+        } else if (diff === 'medium') {
+            document.body.classList.add('medium-bg');
+        } else if (diff === 'hard') {
+            document.body.classList.add('hard-bg');
+        } else if (diff.startsWith('mult-')) {
+            document.body.classList.add('math-bg');
+        }
+    }
 }
 
 init();
