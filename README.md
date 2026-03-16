@@ -44,9 +44,8 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 ### Easy Improvements (Beginner)
 
 - [ ] Add animal sounds when winning
-- [ ] Change the theme (ocean, dinosaurs, superheroes)
-- [ ] Add a counter showing attempts used
-- [ ] Make the astronaut dance on win
+- [ ] Change the theme (ocean, dinosaurs, superheroes) - yes for dinosaurs
+- [ ] Make the astronaut dance on win - yes
 
 ### Medium Improvements (Intermediate)
 
@@ -57,10 +56,10 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 
 ### Hard Improvements (Advanced)
 
-- [ ] Two-player mode (take turns guessing)
-- [ ] Multiplication challenges (guess the product)
-- [ ] Add animated backgrounds per difficulty
-- [ ] Mobile app version
+- [ ] Two-player mode (take turns guessing) - yes
+- [ ] Multiplication challenges (guess the product) - yes
+- [ ] Add animated backgrounds per difficulty - yes
+- [ ] Mobile app version yes
 
 ---
 
