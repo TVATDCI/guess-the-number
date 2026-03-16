@@ -47,6 +47,7 @@ npx serve
 - 🌡️ **Thermometer** - Visual feedback showing how close your guess is
 - 👥 **Two-Player Mode** - Take turns with a friend!
 - 🎨 **Difficulty Backgrounds** - Different colors per difficulty level
+- 🔄 **Reset Progress** - Optional reset in settings (keeps progress optional)
 
 ---
 
@@ -67,6 +68,7 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 - [x] Two-player mode (take turns guessing)
 - [x] Add animated backgrounds per difficulty
 - [x] Unlockable themes (rewards for playing)
+- [x] Reset progress button (optional, in settings)
 
 ### Future Ideas
 
