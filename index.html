@@ -28,11 +28,22 @@
                     </label>
                 </div>
                 <p class="timer-hint">60 seconds to guess!</p>
+                <div class="setting-row">
+                    <span>🦕 Dinosaur Theme</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
                 <button id="close-settings" class="close-settings">Done ✓</button>
             </div>
         </div>
 
         <div id="setup-screen" class="screen">
+            <div id="streak-display" class="streak-display hidden">
+                <span>🔥 Streak:</span>
+                <span id="streak-value">0</span>
+            </div>
             <div id="high-score-display" class="high-score hidden">
                 <span>🏆 Best Record:</span>
                 <span id="high-score-value">0</span>
@@ -58,6 +69,21 @@
                     </button>
                 </div>
             </div>
+            <div class="mode-selector">
+                <h2>Or Try Math Challenge!</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn mult-easy" data-difficulty="mult-easy">
+                        <span class="emoji">➕</span>
+                        <span class="name">Multiply Easy</span>
+                        <span class="range">1-6 × 1-6</span>
+                    </button>
+                    <button class="diff-btn mult-hard" data-difficulty="mult-hard">
+                        <span class="emoji">✖️</span>
+                        <span class="name">Multiply Hard</span>
+                        <span class="range">1-10 × 1-10</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="game-screen" class="screen hidden">
@@ -74,8 +100,12 @@
                 </div>
             </div>
 
-            <div class="astronaut-area">
-                <div id="astronaut" class="astronaut">🧑‍🚀</div>
+            <div class="character-area">
+                <div id="character" class="character">🧑‍🚀</div>
+                <div id="thermometer" class="thermometer hidden">
+                    <div class="thermometer-fill" id="thermometer-fill"></div>
+                    <div class="thermometer-bulb"></div>
+                </div>
             </div>
 
             <div id="message" class="message">
@@ -102,8 +132,8 @@
 
         <div id="win-screen" class="screen hidden">
             <div class="win-content">
-                <div class="win-emoji">🎉🌟🚀🎊</div>
-                <h2>YOU DID IT! 🌟</h2>
+                <div id="win-emoji" class="win-emoji">🎉🌟🚀🎊</div>
+                <h2 id="win-title">YOU DID IT! 🌟</h2>
                 <p id="win-message">You found the secret number!</p>
                 <div class="win-stats">
                     <p>Guesses used: <span id="final-guesses">0</span></p>
@@ -116,11 +146,12 @@
 
         <div id="lose-screen" class="screen hidden">
             <div class="lose-content">
-                <div class="lose-emoji">😢🌙</div>
+                <div id="lose-emoji" class="lose-emoji">😢🌙</div>
                 <h2 id="lose-title">Mission Failed 😢</h2>
                 <p id="lose-message">The secret number was: <span id="secret-number">?</span></p>
+                <p id="lose-message-math" class="hidden">The answer was: <span id="math-answer">?</span></p>
                 <p id="lose-message-time" class="hidden">Time's up! ⏰</p>
-                <p>Don't give up, astronaut! Try again! 💪</p>
+                <p id="lose-encouragement">Don't give up, astronaut! Try again! 💪</p>
                 <button id="play-again-lose" class="play-again-btn">
                     Try Again! 🔄
                 </button>

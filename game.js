@@ -1,20 +1,42 @@
 const DIFFICULTIES = {
-    easy: { min: 1, max: 10, guesses: Infinity, label: 'Easy', emoji: '🌙' },
-    medium: { min: 1, max: 50, guesses: 10, label: 'Medium', emoji: '🪐' },
-    hard: { min: 1, max: 100, guesses: 7, label: 'Hard', emoji: '🌟' }
+    easy: { min: 1, max: 10, guesses: Infinity, label: 'Easy', emoji: '🌙', type: 'number' },
+    medium: { min: 1, max: 50, guesses: 10, label: 'Medium', emoji: '🪐', type: 'number' },
+    hard: { min: 1, max: 100, guesses: 7, label: 'Hard', emoji: '🌟', type: 'number' },
+    'mult-easy': { min: 1, max: 36, guesses: Infinity, label: 'Multiply Easy', emoji: '➕', type: 'multiply', factor1: 6, factor2: 6 },
+    'mult-hard': { min: 1, max: 100, guesses: 10, label: 'Multiply Hard', emoji: '✖️', type: 'multiply', factor1: 10, factor2: 10 }
 };
 
-const MESSAGES = {
-    start: "I'm thinking of a number... Can you find it? 🔢",
-    correct: "🎉 YOU FOUND IT! Amazing job, astronaut!",
-    tooHigh: "📉 Too high! The number is smaller. Try again!",
-    tooLow: "📈 Too low! The number is bigger. Try again!",
-    invalid: "🤔 That's not a valid number. Try again!",
-    outOfRange: (min, max) => `Please enter a number between ${min} and ${max}!`
+const THEMES = {
+    space: {
+        name: 'Space',
+        background: 'stars',
+        character: '🧑‍🚀',
+        winEmojis: '🎉🌟🚀🎊',
+        loseEmojis: '😢🌙',
+        winTitle: 'YOU DID IT! 🌟',
+        loseTitle: 'Mission Failed 😢',
+        encouragement: "Don't give up, astronaut! Try again! 💪",
+        correctMsg: "🎉 YOU FOUND IT! Amazing job, astronaut!",
+        submitBtn: "Blast Off! 🚀"
+    },
+    dinosaur: {
+        name: 'Dinosaur',
+        background: 'jungle',
+        character: '🦕',
+        winEmojis: '🎉🦖🌋💥',
+        loseEmojis: '😢🌋',
+        loseTitle: 'Extinction! 😢',
+        encouragement: "Don't give up, dino! Try again! 💪",
+        correctMsg: "🎉 ROAR! You found it, brave dino!",
+        submitBtn: "ROAR! 🦖"
+    }
 };
 
+let currentTheme = 'space';
 let gameState = {
     secretNumber: 0,
+    secretFactor1: 0,
+    secretFactor2: 0,
     difficulty: null,
     guessesLeft: 0,
     guessesUsed: 0,
@@ -22,7 +44,20 @@ let gameState = {
     timerEnabled: false,
     timerValue: 60,
     timerInterval: null,
-    hasPlayedBefore: false
+    hasPlayedBefore: false,
+    streak: 0,
+    lastWinTime: null
+};
+
+const MESSAGES = {
+    start: "I'm thinking of a number... Can you find it? 🔢",
+    startMult: "I'm thinking of a multiplication answer... Can you solve it? 🔢",
+    correct: "🎉 YOU FOUND IT! Amazing job, astronaut!",
+    correctMult: "🎉 ROAR! You solved it, math genius!",
+    tooHigh: "📉 Too high! The number is smaller. Try again!",
+    tooLow: "📈 Too low! The number is bigger. Try again!",
+    invalid: "🤔 That's not a valid number. Try again!",
+    outOfRange: (min, max) => `Please enter a number between ${min} and ${max}!`
 };
 
 const elements = {
@@ -32,25 +67,36 @@ const elements = {
     loseScreen: document.getElementById('lose-screen'),
     difficultyLabel: document.getElementById('difficulty-label'),
     guessesLeftEl: document.getElementById('guesses-left'),
-    astronaut: document.getElementById('astronaut'),
+    character: document.getElementById('character'),
     message: document.getElementById('message'),
     guessInput: document.getElementById('guess-input'),
     submitBtn: document.getElementById('submit-btn'),
     guessList: document.getElementById('guess-list'),
     finalGuesses: document.getElementById('final-guesses'),
     secretNumber: document.getElementById('secret-number'),
+    mathAnswer: document.getElementById('math-answer'),
     playAgainWin: document.getElementById('play-again-win'),
     playAgainLose: document.getElementById('play-again-lose'),
     settingsBtn: document.getElementById('settings-btn'),
     settingsPanel: document.getElementById('settings-panel'),
     closeSettings: document.getElementById('close-settings'),
     timerToggle: document.getElementById('timer-toggle'),
+    themeToggle: document.getElementById('theme-toggle'),
     timerDisplay: document.getElementById('timer-display'),
     timerValue: document.getElementById('timer-value'),
     highScoreDisplay: document.getElementById('high-score-display'),
     highScoreValue: document.getElementById('high-score-value'),
+    streakDisplay: document.getElementById('streak-display'),
+    streakValue: document.getElementById('streak-value'),
     loseTitle: document.getElementById('lose-title'),
-    loseMessageTime: document.getElementById('lose-message-time')
+    loseMessageTime: document.getElementById('lose-message-time'),
+    loseMessageMath: document.getElementById('lose-message-math'),
+    loseEncouragement: document.getElementById('lose-encouragement'),
+    winTitle: document.getElementById('win-title'),
+    winEmoji: document.getElementById('win-emoji'),
+    loseEmoji: document.getElementById('lose-emoji'),
+    thermometer: document.getElementById('thermometer'),
+    thermometerFill: document.getElementById('thermometer-fill')
 };
 
 function init() {
@@ -78,26 +124,51 @@ function init() {
         gameState.timerEnabled = e.target.checked;
     });
 
+    elements.themeToggle.addEventListener('change', (e) => {
+        currentTheme = e.target.checked ? 'dinosaur' : 'space';
+        applyTheme();
+    });
+
     loadHighScore();
+    loadStreak();
+    applyTheme();
 }
 
 function startGame(difficulty) {
     const config = DIFFICULTIES[difficulty];
+    const isMultiply = config.type === 'multiply';
+    
+    let secretNum;
+    if (isMultiply) {
+        gameState.secretFactor1 = Math.floor(Math.random() * config.factor1) + 1;
+        gameState.secretFactor2 = Math.floor(Math.random() * config.factor2) + 1;
+        secretNum = gameState.secretFactor1 * gameState.secretFactor2;
+    } else {
+        secretNum = Math.floor(Math.random() * (config.max - config.min + 1)) + config.min;
+    }
+    
     gameState = {
-        secretNumber: Math.floor(Math.random() * (config.max - config.min + 1)) + config.min,
+        secretNumber: secretNum,
         difficulty: difficulty,
+        secretFactor1: gameState.secretFactor1,
+        secretFactor2: gameState.secretFactor2,
         guessesLeft: config.guesses === Infinity ? '∞' : config.guesses,
         guessesUsed: 0,
         isGameOver: false,
         timerEnabled: gameState.timerEnabled,
         timerValue: 60,
         timerInterval: null,
-        hasPlayedBefore: gameState.hasPlayedBefore
+        hasPlayedBefore: gameState.hasPlayedBefore,
+        streak: gameState.streak
     };
 
-    elements.difficultyLabel.textContent = `Mission: ${config.emoji} ${config.label} (${config.min}-${config.max})`;
+    if (isMultiply) {
+        elements.difficultyLabel.textContent = `Math: ${config.emoji} ${gameState.secretFactor1} × ${gameState.secretFactor2} = ?`;
+    } else {
+        elements.difficultyLabel.textContent = `Mission: ${config.emoji} ${config.label} (${config.min}-${config.max})`;
+    }
     elements.guessesLeftEl.textContent = config.guesses === Infinity ? '⭐ ∞' : `⭐ ${gameState.guessesLeft}`;
-    elements.message.textContent = MESSAGES.start;
+    elements.message.textContent = isMultiply ? MESSAGES.startMult : MESSAGES.start;
     elements.message.className = 'message';
     elements.guessInput.value = '';
     elements.guessInput.min = config.min;
@@ -110,6 +181,15 @@ function startGame(difficulty) {
         startTimer();
     } else {
         elements.timerDisplay.classList.add('hidden');
+    }
+
+    elements.character.textContent = THEMES[currentTheme].character;
+    elements.submitBtn.textContent = THEMES[currentTheme].submitBtn;
+
+    if (!isMultiply) {
+        elements.thermometer.classList.remove('hidden');
+    } else {
+        elements.thermometer.classList.add('hidden');
     }
 
     showScreen('game');
@@ -147,18 +227,19 @@ function handleGuess() {
 
     const guess = parseInt(elements.guessInput.value);
     const config = DIFFICULTIES[gameState.difficulty];
+    const isMultiply = config.type === 'multiply';
 
-    elements.astronaut.classList.remove('shake', 'bounce');
+    elements.character.classList.remove('shake', 'bounce');
 
     if (isNaN(guess)) {
         showMessage(MESSAGES.invalid, '');
-        shakeAstronaut();
+        shakeCharacter();
         return;
     }
 
     if (guess < config.min || guess > config.max) {
         showMessage(MESSAGES.outOfRange(config.min, config.max), '');
-        shakeAstronaut();
+        shakeCharacter();
         return;
     }
 
@@ -171,21 +252,44 @@ function handleGuess() {
 
     addGuessToHistory(guess);
 
+    if (!isMultiply) {
+        updateThermometer(guess);
+    }
+
     if (guess === gameState.secretNumber) {
         stopTimer();
         winGame();
-    } else if (gameState.guessesLeft === 0 || gameState.guessesLeft === '∞' && false) {
+    } else if (gameState.guessesLeft === 0 || (gameState.guessesLeft === '∞' && false)) {
         loseGame();
     } else if (guess > gameState.secretNumber) {
         showMessage(MESSAGES.tooHigh, 'hint-high');
-        shakeAstronaut();
+        shakeCharacter();
     } else {
         showMessage(MESSAGES.tooLow, 'hint-low');
-        shakeAstronaut();
+        shakeCharacter();
     }
 
     elements.guessInput.value = '';
     elements.guessInput.focus();
+}
+
+function updateThermometer(guess) {
+    const config = DIFFICULTIES[gameState.difficulty];
+    const range = config.max - config.min;
+    const distance = Math.abs(guess - gameState.secretNumber);
+    const percentage = Math.max(0, 100 - (distance / range) * 100);
+    
+    elements.thermometerFill.style.height = percentage + '%';
+    
+    if (percentage >= 80) {
+        elements.thermometerFill.style.background = 'linear-gradient(to top, #ff5252, #ff1744)';
+    } else if (percentage >= 50) {
+        elements.thermometerFill.style.background = 'linear-gradient(to top, #ffab40, #ff9100)';
+    } else if (percentage >= 25) {
+        elements.thermometerFill.style.background = 'linear-gradient(to top, #ffea00, #ffc400)';
+    } else {
+        elements.thermometerFill.style.background = 'linear-gradient(to top, #00e676, #00c853)';
+    }
 }
 
 function showMessage(text, className) {
@@ -209,28 +313,36 @@ function addGuessToHistory(guess) {
     elements.guessList.appendChild(item);
 }
 
-function shakeAstronaut() {
-    elements.astronaut.classList.add('shake');
-    setTimeout(() => elements.astronaut.classList.remove('shake'), 500);
+function shakeCharacter() {
+    elements.character.classList.add('shake');
+    setTimeout(() => elements.character.classList.remove('shake'), 500);
 }
 
-function bounceAstronaut() {
-    elements.astronaut.classList.add('bounce');
-    setTimeout(() => elements.astronaut.classList.remove('bounce'), 600);
+function bounceCharacter() {
+    elements.character.classList.add('bounce');
+    setTimeout(() => elements.character.classList.remove('bounce'), 600);
 }
 
-function danceAstronaut() {
-    elements.astronaut.classList.add('dance');
-    setTimeout(() => elements.astronaut.classList.remove('dance'), 1500);
+function danceCharacter() {
+    elements.character.classList.add('dance');
+    setTimeout(() => elements.character.classList.remove('dance'), 1500);
 }
 
 function winGame() {
     gameState.isGameOver = true;
-    showMessage(MESSAGES.correct, 'correct');
-    danceAstronaut();
+    const config = DIFFICULTIES[gameState.difficulty];
+    const isMultiply = config.type === 'multiply';
+    
+    const msg = isMultiply ? MESSAGES.correctMult : THEMES[currentTheme].correctMsg;
+    showMessage(msg, 'correct');
+    danceCharacter();
     playWinSound();
     
+    updateStreak();
+    
     elements.finalGuesses.textContent = gameState.guessesUsed;
+    elements.winTitle.textContent = THEMES[currentTheme].winTitle;
+    elements.winEmoji.textContent = THEMES[currentTheme].winEmojis;
     
     setTimeout(() => {
         showScreen('win');
@@ -241,15 +353,31 @@ function winGame() {
 function loseGame(timerRanOut = false) {
     gameState.isGameOver = true;
     stopTimer();
-    elements.secretNumber.textContent = gameState.secretNumber;
     
-    if (timerRanOut) {
-        elements.loseTitle.textContent = "Time's Up! ⏰";
-        elements.loseMessageTime.classList.remove('hidden');
-    } else {
-        elements.loseTitle.textContent = "Mission Failed 😢";
+    const config = DIFFICULTIES[gameState.difficulty];
+    const isMultiply = config.type === 'multiply';
+    
+    resetStreak();
+    
+    if (isMultiply) {
+        elements.secretNumber.textContent = gameState.secretNumber;
+        elements.mathAnswer.textContent = `${gameState.secretFactor1} × ${gameState.secretFactor2} = ${gameState.secretNumber}`;
+        elements.loseMessageMath.classList.remove('hidden');
         elements.loseMessageTime.classList.add('hidden');
+    } else {
+        elements.secretNumber.textContent = gameState.secretNumber;
+        elements.loseMessageMath.classList.add('hidden');
+        
+        if (timerRanOut) {
+            elements.loseMessageTime.classList.remove('hidden');
+        } else {
+            elements.loseMessageTime.classList.add('hidden');
+        }
     }
+    
+    elements.loseTitle.textContent = timerRanOut ? "Time's Up! ⏰" : THEMES[currentTheme].loseTitle;
+    elements.loseEmoji.textContent = THEMES[currentTheme].loseEmojis;
+    elements.loseEncouragement.textContent = THEMES[currentTheme].encouragement;
     
     showScreen('lose');
 }
@@ -328,6 +456,58 @@ function playWinSound() {
         
         delay += 0.1;
     });
+}
+
+function loadStreak() {
+    const streak = localStorage.getItem('guessTheNumberStreak');
+    const lastWin = localStorage.getItem('guessTheNumberLastWin');
+    
+    if (streak && lastWin) {
+        const oneDay = 24 * 60 * 60 * 1000;
+        const daysSinceLastWin = (Date.now() - parseInt(lastWin)) / oneDay;
+        
+        if (daysSinceLastWin < 1) {
+            gameState.streak = parseInt(streak);
+            elements.streakValue.textContent = gameState.streak;
+            elements.streakDisplay.classList.remove('hidden');
+        } else {
+            gameState.streak = 0;
+            localStorage.setItem('guessTheNumberStreak', 0);
+        }
+    }
+}
+
+function updateStreak() {
+    gameState.streak++;
+    localStorage.setItem('guessTheNumberStreak', gameState.streak);
+    localStorage.setItem('guessTheNumberLastWin', Date.now());
+    elements.streakValue.textContent = gameState.streak;
+    elements.streakDisplay.classList.remove('hidden');
+}
+
+function resetStreak() {
+    gameState.streak = 0;
+    localStorage.setItem('guessTheNumberStreak', 0);
+    elements.streakDisplay.classList.add('hidden');
+}
+
+function applyTheme() {
+    const theme = THEMES[currentTheme];
+    document.body.className = theme.background;
+    
+    if (currentTheme === 'dinosaur') {
+        document.documentElement.style.setProperty('--bg-dark', '#1a3a1a');
+        document.documentElement.style.setProperty('--bg-light', '#2d5a2d');
+        document.querySelector('h1').textContent = 'Dino Number Hunt 🦕';
+        document.querySelector('.subtitle').textContent = 'Help the dinosaur find the secret number!';
+    } else {
+        document.documentElement.style.setProperty('--bg-dark', '#0c1445');
+        document.documentElement.style.setProperty('--bg-light', '#1a237e');
+        document.querySelector('h1').textContent = 'Space Number Hunt 🚀';
+        document.querySelector('.subtitle').textContent = 'Help the astronaut find the secret number!';
+    }
+    
+    elements.themeToggle.checked = currentTheme === 'dinosaur';
 }
 
 init();
