@@ -14,9 +14,30 @@
         <header>
             <h1>Space Number Hunt 🚀</h1>
             <p class="subtitle">Help the astronaut find the secret number!</p>
+            <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
         </header>
 
+        <div id="settings-panel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h3>⚙️ Settings</h3>
+                <div class="setting-row">
+                    <span>⏱️ Timer Mode</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="timer-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p class="timer-hint">60 seconds to guess!</p>
+                <button id="close-settings" class="close-settings">Done ✓</button>
+            </div>
+        </div>
+
         <div id="setup-screen" class="screen">
+            <div id="high-score-display" class="high-score hidden">
+                <span>🏆 Best Record:</span>
+                <span id="high-score-value">0</span>
+                <span>guesses</span>
+            </div>
             <div class="difficulty-selector">
                 <h2>Choose Your Mission:</h2>
                 <div class="difficulty-buttons">
@@ -43,6 +64,10 @@
             <div class="game-info">
                 <div class="mission-info">
                     <span id="difficulty-label">Mission: Easy</span>
+                </div>
+                <div class="timer-display hidden" id="timer-display">
+                    <span>⏱️</span>
+                    <span id="timer-value">60</span>
                 </div>
                 <div class="guesses-info">
                     <span id="guesses-left">⭐ 10</span> guesses left
@@ -92,8 +117,9 @@
         <div id="lose-screen" class="screen hidden">
             <div class="lose-content">
                 <div class="lose-emoji">😢🌙</div>
-                <h2>Mission Failed 😢</h2>
-                <p>The secret number was: <span id="secret-number">?</span></p>
+                <h2 id="lose-title">Mission Failed 😢</h2>
+                <p id="lose-message">The secret number was: <span id="secret-number">?</span></p>
+                <p id="lose-message-time" class="hidden">Time's up! ⏰</p>
                 <p>Don't give up, astronaut! Try again! 💪</p>
                 <button id="play-again-lose" class="play-again-btn">
                     Try Again! 🔄

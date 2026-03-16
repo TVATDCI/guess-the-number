@@ -59,7 +59,7 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 - [ ] Two-player mode (take turns guessing) - yes
 - [ ] Multiplication challenges (guess the product) - yes
 - [ ] Add animated backgrounds per difficulty - yes
-- [ ] Mobile app version yes
+- [ ] Mobile app version - yes
 
 ---
 

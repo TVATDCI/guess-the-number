@@ -18,7 +18,11 @@ let gameState = {
     difficulty: null,
     guessesLeft: 0,
     guessesUsed: 0,
-    isGameOver: false
+    isGameOver: false,
+    timerEnabled: false,
+    timerValue: 60,
+    timerInterval: null,
+    hasPlayedBefore: false
 };
 
 const elements = {
@@ -36,7 +40,17 @@ const elements = {
     finalGuesses: document.getElementById('final-guesses'),
     secretNumber: document.getElementById('secret-number'),
     playAgainWin: document.getElementById('play-again-win'),
-    playAgainLose: document.getElementById('play-again-lose')
+    playAgainLose: document.getElementById('play-again-lose'),
+    settingsBtn: document.getElementById('settings-btn'),
+    settingsPanel: document.getElementById('settings-panel'),
+    closeSettings: document.getElementById('close-settings'),
+    timerToggle: document.getElementById('timer-toggle'),
+    timerDisplay: document.getElementById('timer-display'),
+    timerValue: document.getElementById('timer-value'),
+    highScoreDisplay: document.getElementById('high-score-display'),
+    highScoreValue: document.getElementById('high-score-value'),
+    loseTitle: document.getElementById('lose-title'),
+    loseMessageTime: document.getElementById('lose-message-time')
 };
 
 function init() {
@@ -51,6 +65,20 @@ function init() {
 
     elements.playAgainWin.addEventListener('click', resetGame);
     elements.playAgainLose.addEventListener('click', resetGame);
+
+    elements.settingsBtn.addEventListener('click', () => {
+        elements.settingsPanel.classList.remove('hidden');
+    });
+
+    elements.closeSettings.addEventListener('click', () => {
+        elements.settingsPanel.classList.add('hidden');
+    });
+
+    elements.timerToggle.addEventListener('change', (e) => {
+        gameState.timerEnabled = e.target.checked;
+    });
+
+    loadHighScore();
 }
 
 function startGame(difficulty) {
@@ -60,7 +88,11 @@ function startGame(difficulty) {
         difficulty: difficulty,
         guessesLeft: config.guesses === Infinity ? '∞' : config.guesses,
         guessesUsed: 0,
-        isGameOver: false
+        isGameOver: false,
+        timerEnabled: gameState.timerEnabled,
+        timerValue: 60,
+        timerInterval: null,
+        hasPlayedBefore: gameState.hasPlayedBefore
     };
 
     elements.difficultyLabel.textContent = `Mission: ${config.emoji} ${config.label} (${config.min}-${config.max})`;
@@ -72,8 +104,42 @@ function startGame(difficulty) {
     elements.guessInput.max = config.max;
     elements.guessList.innerHTML = '';
 
+    if (gameState.timerEnabled) {
+        elements.timerDisplay.classList.remove('hidden');
+        elements.timerValue.textContent = gameState.timerValue;
+        startTimer();
+    } else {
+        elements.timerDisplay.classList.add('hidden');
+    }
+
     showScreen('game');
     elements.guessInput.focus();
+}
+
+function startTimer() {
+    stopTimer();
+    gameState.timerInterval = setInterval(() => {
+        gameState.timerValue--;
+        elements.timerValue.textContent = gameState.timerValue;
+        
+        if (gameState.timerValue <= 10) {
+            elements.timerValue.style.color = '#ff5252';
+        } else {
+            elements.timerValue.style.color = '';
+        }
+
+        if (gameState.timerValue <= 0) {
+            stopTimer();
+            loseGame(true);
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
 }
 
 function handleGuess() {
@@ -106,6 +172,7 @@ function handleGuess() {
     addGuessToHistory(guess);
 
     if (guess === gameState.secretNumber) {
+        stopTimer();
         winGame();
     } else if (gameState.guessesLeft === 0 || gameState.guessesLeft === '∞' && false) {
         loseGame();
@@ -152,10 +219,16 @@ function bounceAstronaut() {
     setTimeout(() => elements.astronaut.classList.remove('bounce'), 600);
 }
 
+function danceAstronaut() {
+    elements.astronaut.classList.add('dance');
+    setTimeout(() => elements.astronaut.classList.remove('dance'), 1500);
+}
+
 function winGame() {
     gameState.isGameOver = true;
     showMessage(MESSAGES.correct, 'correct');
-    bounceAstronaut();
+    danceAstronaut();
+    playWinSound();
     
     elements.finalGuesses.textContent = gameState.guessesUsed;
     
@@ -165,13 +238,26 @@ function winGame() {
     }, 800);
 }
 
-function loseGame() {
+function loseGame(timerRanOut = false) {
     gameState.isGameOver = true;
+    stopTimer();
     elements.secretNumber.textContent = gameState.secretNumber;
+    
+    if (timerRanOut) {
+        elements.loseTitle.textContent = "Time's Up! ⏰";
+        elements.loseMessageTime.classList.remove('hidden');
+    } else {
+        elements.loseTitle.textContent = "Mission Failed 😢";
+        elements.loseMessageTime.classList.add('hidden');
+    }
+    
     showScreen('lose');
 }
 
 function resetGame() {
+    gameState.hasPlayedBefore = true;
+    saveHighScore();
+    loadHighScore();
     showScreen('setup');
 }
 
@@ -200,6 +286,48 @@ function createConfetti() {
     }
 
     setTimeout(() => container.remove(), 5000);
+}
+
+function loadHighScore() {
+    const highScore = localStorage.getItem('guessTheNumberHighScore');
+    if (gameState.hasPlayedBefore && highScore) {
+        elements.highScoreValue.textContent = highScore;
+        elements.highScoreDisplay.classList.remove('hidden');
+    }
+}
+
+function saveHighScore() {
+    if (gameState.guessesUsed > 0) {
+        const currentHighScore = localStorage.getItem('guessTheNumberHighScore');
+        if (!currentHighScore || gameState.guessesUsed < parseInt(currentHighScore)) {
+            localStorage.setItem('guessTheNumberHighScore', gameState.guessesUsed);
+        }
+    }
+}
+
+function playWinSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    let delay = 0;
+    
+    notes.forEach((freq, i) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.3);
+        
+        oscillator.start(audioCtx.currentTime + delay);
+        oscillator.stop(audioCtx.currentTime + delay + 0.3);
+        
+        delay += 0.1;
+    });
 }
 
 init();
