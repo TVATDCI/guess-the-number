@@ -35,16 +35,18 @@ npx serve
 3. Get hints if too high (📉) or too low (📈)
 4. Win and celebrate with confetti! 🎉
 
-### New Features (Phase 1 & 2)
+### New Features (All Phases)
 
 - ⏱️ **Timer Mode** - 60 second speed challenge (toggle in settings)
 - 🏆 **High Score** - Best record saved locally
 - 🔥 **Win Streak** - Track consecutive wins
 - 🔊 **Sound Effects** - Celebration tones on win
 - 💃 **Character Dance** - Character dances on victory
-- 🦕 **Dinosaur Theme** - Switch between Space and Dinosaur themes
+- 🦕🐙 **Themes** - Space, Dinosaur, and Ocean (unlockable!)
 - 🧮 **Multiplication Mode** - Math challenges (separate game mode)
 - 🌡️ **Thermometer** - Visual feedback showing how close your guess is
+- 👥 **Two-Player Mode** - Take turns with a friend!
+- 🎨 **Difficulty Backgrounds** - Different colors per difficulty level
 
 ---
 
@@ -57,28 +59,21 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 ### Completed ✅
 
 - [x] Add animal sounds when winning
-- [x] Change the theme (ocean, dinosaurs, superheroes) - yes for dinosaurs
-- [x] Make the astronaut dance on win - yes
+- [x] Change the theme (ocean, dinosaurs, superheroes)
+- [x] Make the astronaut dance on win
 - [x] Add a timer for speed challenges
 - [x] Create a high score board (localStorage)
-- [x] Multiplication challenges (guess the product) - yes
+- [x] Multiplication challenges (guess the product)
+- [x] Two-player mode (take turns guessing)
+- [x] Add animated backgrounds per difficulty
+- [x] Unlockable themes (rewards for playing)
 
-### Easy Improvements (Beginner)
+### Future Ideas
 
+- [ ] Daily challenge mode
+- [ ] Mobile app version
 - [ ] Add difficulty icons to guess history
 - [ ] Visual feedback animations for wrong guesses
-
-### Medium Improvements (Intermediate)
-
-- [ ] Add multiple secret numbers to guess
-- [ ] Daily challenge mode
-
-### Hard Improvements (Advanced)
-
-- [ ] Two-player mode (take turns guessing)
-- [ ] Add animated backgrounds per difficulty
-- [ ] Mobile app version
-- [ ] Unlockable themes (rewards for playing)
 
 ---
 
