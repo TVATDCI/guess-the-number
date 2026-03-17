@@ -186,17 +186,11 @@ function init() {
                 localStorage.removeItem('guessTheNumberHighScore');
                 localStorage.removeItem('guessTheNumberTotalWins');
                 
-                totalWins = 0;
-                gameState.streak = 0;
-                gameState.mathLevel = { 'mult-easy': 1, 'mult-hard': 1 };
-                currentTheme = 'space';
-                
-                elements.streakDisplay.classList.add('hidden');
-                elements.highScoreDisplay.classList.add('hidden');
-                updateThemeButtons();
-                applyTheme();
-                
                 elements.settingsPanel.classList.add('hidden');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 300);
             }
         });
     }
