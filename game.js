@@ -188,6 +188,7 @@ function init() {
                 
                 totalWins = 0;
                 gameState.streak = 0;
+                gameState.mathLevel = { 'mult-easy': 1, 'mult-hard': 1 };
                 currentTheme = 'space';
                 
                 elements.streakDisplay.classList.add('hidden');
@@ -195,7 +196,7 @@ function init() {
                 updateThemeButtons();
                 applyTheme();
                 
-                alert('Progress reset! Start fresh!');
+                elements.settingsPanel.classList.add('hidden');
             }
         });
     }
