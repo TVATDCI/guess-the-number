@@ -47,7 +47,9 @@ npx serve
 - 🌡️ **Thermometer** - Visual feedback showing how close your guess is
 - 👥 **Two-Player Mode** - Take turns with a friend!
 - 🎨 **Difficulty Backgrounds** - Different colors per difficulty level
-- 🔄 **Reset Progress** - Optional reset in settings (keeps progress optional)
+- 🔄 **Reset Progress** - Optional reset in settings (auto-reloads page)
+- 📱 **Responsive Design** - Works on mobile, tablet, and desktop
+- ⭐ **Level Up System** - Math difficulty increases after each win
 
 ---
 
@@ -70,6 +72,8 @@ Here are some ideas from my 7 year old boss, which we will soon work on together
 - [x] Unlockable themes (rewards for playing)
 - [x] Reset progress button (optional, in settings)
 - [x] Level Up system for math mode (gradual difficulty increase)
+- [x] Responsive settings button (fixed on desktop, inline on mobile)
+- [x] Auto-reload page after reset progress
 
 ### Future Ideas
 
