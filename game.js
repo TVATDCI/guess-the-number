@@ -2,8 +2,8 @@ const DIFFICULTIES = {
     easy: { min: 1, max: 10, guesses: Infinity, label: 'Easy', emoji: '🌙', type: 'number' },
     medium: { min: 1, max: 50, guesses: 10, label: 'Medium', emoji: '🪐', type: 'number' },
     hard: { min: 1, max: 100, guesses: 7, label: 'Hard', emoji: '🌟', type: 'number' },
-    'mult-easy': { min: 1, max: 36, guesses: Infinity, label: 'Multiply Easy', emoji: '➕', type: 'multiply', factor1: 6, factor2: 6 },
-    'mult-hard': { min: 1, max: 100, guesses: 10, label: 'Multiply Hard', emoji: '✖️', type: 'multiply', factor1: 10, factor2: 10 },
+    'mult-easy': { min: 1, max: 100, guesses: Infinity, label: 'Multiply Easy', emoji: '➕', type: 'multiply', factor1: 10, factor2: 10 },
+    'mult-hard': { min: 1, max: 200, guesses: 10, label: 'Multiply Hard', emoji: '✖️', type: 'multiply', factor1: 20, factor2: 10 },
     'two-player': { min: 1, max: 50, guesses: 10, label: 'Two Player', emoji: '👥', type: 'twoplayer' }
 };
 
@@ -67,7 +67,11 @@ let gameState = {
     hasPlayedBefore: false,
     streak: 0,
     lastWinTime: null,
-    isTwoPlayer: false
+    isTwoPlayer: false,
+    mathLevel: {
+        'mult-easy': 1,
+        'mult-hard': 1
+    }
 };
 
 const MESSAGES = {
@@ -86,6 +90,7 @@ const elements = {
     gameScreen: document.getElementById('game-screen'),
     winScreen: document.getElementById('win-screen'),
     loseScreen: document.getElementById('lose-screen'),
+    levelupScreen: document.getElementById('levelup-screen'),
     difficultyLabel: document.getElementById('difficulty-label'),
     guessesLeftEl: document.getElementById('guesses-left'),
     character: document.getElementById('character'),
@@ -127,7 +132,10 @@ const elements = {
     player1Turn: document.getElementById('player-1-turn'),
     player2Turn: document.getElementById('player-2-turn'),
     p1Score: document.getElementById('p1-score'),
-    p2Score: document.getElementById('p2-score')
+    p2Score: document.getElementById('p2-score'),
+    levelupYes: document.getElementById('levelup-yes'),
+    levelupNo: document.getElementById('levelup-no'),
+    levelupMessage: document.getElementById('levelup-message')
 };
 
 function init() {
@@ -142,6 +150,9 @@ function init() {
 
     elements.playAgainWin.addEventListener('click', resetGame);
     elements.playAgainLose.addEventListener('click', resetGame);
+
+    elements.levelupYes.addEventListener('click', handleLevelUpYes);
+    elements.levelupNo.addEventListener('click', handleLevelUpNo);
 
     elements.settingsBtn.addEventListener('click', () => {
         elements.settingsPanel.classList.remove('hidden');
@@ -217,13 +228,30 @@ function startGame(difficulty) {
     const isMultiply = config.type === 'multiply';
     const isTwoPlayer = config.type === 'twoplayer';
     
-    let secretNum;
+    let secretNum, factor1Max, factor2Max, maxRange;
+    
     if (isMultiply) {
-        gameState.secretFactor1 = Math.floor(Math.random() * config.factor1) + 1;
-        gameState.secretFactor2 = Math.floor(Math.random() * config.factor2) + 1;
+        const level = gameState.mathLevel[difficulty] || 1;
+        const isHard = difficulty === 'mult-hard';
+        
+        if (isHard) {
+            factor1Max = Math.min(20, 10 + level * 2);
+            factor2Max = Math.min(10, 5 + Math.floor(level / 2));
+        } else {
+            factor1Max = Math.min(10, 3 + level);
+            factor2Max = Math.min(10, 3 + level);
+        }
+        
+        maxRange = factor1Max * factor2Max;
+        
+        gameState.secretFactor1 = Math.floor(Math.random() * factor1Max) + 1;
+        gameState.secretFactor2 = Math.floor(Math.random() * factor2Max) + 1;
         secretNum = gameState.secretFactor1 * gameState.secretFactor2;
     } else {
         secretNum = Math.floor(Math.random() * (config.max - config.min + 1)) + config.min;
+        factor1Max = config.factor1;
+        factor2Max = config.factor2;
+        maxRange = config.max;
     }
     
     gameState = {
@@ -239,11 +267,13 @@ function startGame(difficulty) {
         timerInterval: null,
         hasPlayedBefore: gameState.hasPlayedBefore,
         streak: gameState.streak,
-        isTwoPlayer: isTwoPlayer
+        isTwoPlayer: isTwoPlayer,
+        mathLevel: { ...gameState.mathLevel }
     };
 
     if (isMultiply) {
-        elements.difficultyLabel.textContent = `Math: ${config.emoji} ${gameState.secretFactor1} × ${gameState.secretFactor2} = ?`;
+        const level = gameState.mathLevel[difficulty] || 1;
+        elements.difficultyLabel.textContent = `Math: ${config.emoji} Level ${level} (1-${factor1Max} × 1-${factor2Max})`;
     } else if (isTwoPlayer) {
         elements.difficultyLabel.textContent = `👥 Two Player - ${config.label} (${config.min}-${config.max})`;
     } else {
@@ -253,8 +283,8 @@ function startGame(difficulty) {
     elements.message.textContent = isMultiply ? MESSAGES.startMult : (isTwoPlayer ? `Player ${twoPlayerState.currentPlayer}'s turn!` : MESSAGES.start);
     elements.message.className = 'message';
     elements.guessInput.value = '';
-    elements.guessInput.min = config.min;
-    elements.guessInput.max = config.max;
+    elements.guessInput.min = 1;
+    elements.guessInput.max = isMultiply ? maxRange : config.max;
     elements.guessList.innerHTML = '';
 
     if (gameState.timerEnabled) {
@@ -531,10 +561,56 @@ function winGame() {
     elements.winTitle.textContent = THEMES[currentTheme].winTitle;
     elements.winEmoji.textContent = THEMES[currentTheme].winEmojis;
     
-    setTimeout(() => {
-        showScreen('win');
-        createConfetti();
-    }, 800);
+    if (isMultiply) {
+        const currentLevel = gameState.mathLevel[gameState.difficulty] || 1;
+        const nextLevel = currentLevel + 1;
+        gameState.mathLevel[gameState.difficulty] = nextLevel;
+        
+        setTimeout(() => {
+            showLevelUpScreen(gameState.difficulty, currentLevel, nextLevel);
+        }, 800);
+    } else {
+        setTimeout(() => {
+            showScreen('win');
+            createConfetti();
+        }, 800);
+    }
+}
+
+function showLevelUpScreen(difficulty, currentLevel, nextLevel) {
+    const isHard = difficulty === 'mult-hard';
+    
+    let nextFactor1Max, nextFactor2Max;
+    if (isHard) {
+        nextFactor1Max = Math.min(20, 10 + nextLevel * 2);
+        nextFactor2Max = Math.min(10, 5 + Math.floor(nextLevel / 2));
+    } else {
+        nextFactor1Max = Math.min(10, 3 + nextLevel);
+        nextFactor2Max = Math.min(10, 3 + nextLevel);
+    }
+    
+    const maxProduct = nextFactor1Max * nextFactor2Max;
+    
+    elements.levelupMessage.textContent = `Level ${currentLevel} Complete! 🎉\nReady for Level ${nextLevel} (up to ${maxProduct})?`;
+    showScreen('levelup');
+}
+
+function handleLevelUpYes() {
+    const difficulty = gameState.difficulty;
+    const currentLevel = gameState.mathLevel[difficulty];
+    
+    gameState.hasPlayedBefore = true;
+    saveHighScore();
+    loadHighScore();
+    
+    startGame(difficulty);
+}
+
+function handleLevelUpNo() {
+    gameState.hasPlayedBefore = true;
+    saveHighScore();
+    loadHighScore();
+    showScreen('setup');
 }
 
 function loseGame(timerRanOut = false) {
@@ -577,7 +653,7 @@ function resetGame() {
 }
 
 function showScreen(screenName) {
-    const screens = ['setup', 'game', 'win', 'lose'];
+    const screens = ['setup', 'game', 'win', 'lose', 'levelup'];
     screens.forEach(s => {
         document.getElementById(`${s}-screen`).classList.add('hidden');
     });
