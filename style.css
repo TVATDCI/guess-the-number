@@ -146,14 +146,14 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     position: relative;
 }
 
 .settings-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: fixed;
+    top: 15px;
+    right: 15px;
     background: rgba(255, 255, 255, 0.1);
     border: none;
     font-size: 1.5rem;
@@ -161,6 +161,7 @@ header {
     padding: 8px 12px;
     border-radius: 12px;
     transition: all 0.3s ease;
+    z-index: 50;
 }
 
 .settings-btn:hover {
@@ -169,7 +170,7 @@ header {
 }
 
 .settings-panel {
-    position: absolute;
+    position: fixed;
     top: 60px;
     right: 10px;
     z-index: 100;
@@ -823,6 +824,72 @@ h1 {
     box-shadow: 0 10px 30px rgba(0, 230, 118, 0.4);
 }
 
+/* Level Up Screen */
+.levelup-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.levelup-emoji {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.levelup-content h2 {
+    font-size: 2.5rem;
+    color: var(--accent-yellow);
+    margin-bottom: 15px;
+    animation: glow 1s ease-in-out infinite alternate;
+}
+
+.levelup-message {
+    font-size: 1.3rem;
+    margin-bottom: 25px;
+    color: var(--text-light);
+    white-space: pre-line;
+}
+
+.levelup-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.levelup-btn {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    width: 100%;
+    max-width: 250px;
+}
+
+.levelup-btn.yes {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+    color: var(--bg-dark);
+}
+
+.levelup-btn.yes:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 230, 118, 0.4);
+}
+
+.levelup-btn.no {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.levelup-btn.no:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Confetti Animation */
 .confetti-container {
     position: fixed;
@@ -855,7 +922,7 @@ h1 {
 }
 
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     h1 {
         font-size: 1.8rem;
     }
@@ -879,5 +946,35 @@ h1 {
     
     #guess-input, .submit-btn {
         width: 100%;
+    }
+    
+    .settings-btn {
+        position: relative;
+        top: auto;
+        right: auto;
+        display: block;
+        margin: 0 auto 15px auto;
+        width: fit-content;
+    }
+    
+    .settings-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .settings-panel {
+        position: relative;
+        top: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 10px;
+    }
+    
+    .settings-content {
+        min-width: auto;
+    }
+    
+    header {
+        margin-bottom: 20px;
     }
 }
