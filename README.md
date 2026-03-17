@@ -1,4 +1,4 @@
-# Guess the Number 🚀
+# Guess the Number
 
 A fun space-themed number guessing for kids. Built with vanilla HTML/CSS/JS and love for children!
 
@@ -20,13 +20,13 @@ npx serve
 
 ### Difficulty Levels
 
-| Level        | Range         | Guesses   |
-| ------------ | ------------- | --------- |
-| 🌙 Easy      | 1-10          | Unlimited |
-| 🪐 Medium    | 1-50          | 10        |
-| 🌟 Hard      | 1-100         | 7         |
-| ➕ Mult Easy | 1-10 × 1-10   | Unlimited |
-| ✖️ Mult Hard | 1-20 × 1-10   | 10        |
+| Level        | Range       | Guesses   |
+| ------------ | ----------- | --------- |
+| 🌙 Easy      | 1-10        | Unlimited |
+| 🪐 Medium    | 1-50        | 10        |
+| 🌟 Hard      | 1-100       | 7         |
+| ➕ Mult Easy | 1-10 × 1-10 | Unlimited |
+| ✖️ Mult Hard | 1-20 × 1-10 | 10        |
 
 ### How to Play
 
@@ -59,7 +59,7 @@ I am sure they will have a better idea for the development!
 
 Here are some ideas from my 7 year old boss, which we will soon work on together:
 
-### Completed ✅
+### Completed
 
 - [x] Add animal sounds when winning
 - [x] Change the theme (ocean, dinosaurs, superheroes)
