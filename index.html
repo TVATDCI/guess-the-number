@@ -104,6 +104,17 @@
                     </button>
                 </div>
             </div>
+            <div class="mode-selector">
+                <h2>Daily Challenge! 🌟</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn daily-challenge" id="daily-challenge-btn" data-difficulty="daily">
+                        <span class="emoji">📅</span>
+                        <span class="name">Daily Challenge</span>
+                        <span class="range">Same number, same day!</span>
+                    </button>
+                </div>
+                <div id="daily-challenge-calendar" class="daily-calendar"></div>
+            </div>
         </div>
 
         <div id="game-screen" class="screen hidden">
@@ -198,9 +209,56 @@
                 </div>
             </div>
         </div>
+
+        <div id="daily-challenge-screen" class="screen hidden">
+            <div class="game-info">
+                <div class="mission-info">
+                    <span id="daily-difficulty-label">Daily Challenge</span>
+                </div>
+                <div class="guesses-info">
+                    <span id="daily-guesses-left">⭐ 1</span> guess
+                </div>
+            </div>
+
+            <div class="character-area">
+                <div id="daily-character" class="character">🧑‍🚀</div>
+            </div>
+
+            <div id="daily-message" class="message">
+                Today's challenge! Can you find it in 1 guess? 🔢
+            </div>
+
+            <div class="input-area">
+                <input type="number" id="daily-guess-input" placeholder="Enter your guess!" min="1">
+                <button id="daily-submit-btn" class="submit-btn">
+                    Blast Off! 🚀
+                </button>
+            </div>
+        </div>
+
+        <div id="daily-result-screen" class="screen hidden">
+            <div class="daily-result-content">
+                <h2 id="daily-result-title">Daily Challenge Result</h2>
+                <p id="daily-result-message"></p>
+                <div class="win-stats">
+                    <p>Secret number: <span id="daily-secret-number">?</span></p>
+                    <p>Your guess: <span id="daily-your-guess">?</span></p>
+                </div>
+                <div class="daily-calendar-section">
+                    <h3>Last 7 Days</h3>
+                    <div id="daily-calendar-grid" class="calendar-grid"></div>
+                </div>
+                <button id="daily-share-btn" class="play-again-btn">
+                    Share Result 📋
+                </button>
+                <button id="daily-play-again" class="play-again-btn">
+                    Back to Menu 🔄
+                </button>
+            </div>
+        </div>
     </div>
 
-    <script src="game.js"></script>
+    <script type="module" src="src/main.js"></script>
 </body>
 
 </html>
